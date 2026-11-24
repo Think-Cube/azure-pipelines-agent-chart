@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Agent image issues
+    url: https://github.com/Think-Cube/docker-azure-pipelines-agent/issues
+    about: Problems in the agent container image rather than in this chart
+  - name: Azure Pipelines agent issues
+    url: https://github.com/microsoft/azure-pipelines-agent/issues
+    about: Problems in the Azure Pipelines agent itself

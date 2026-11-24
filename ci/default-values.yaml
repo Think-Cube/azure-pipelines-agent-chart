@@ -1,0 +1,8 @@
+# The defaults, with a placeholder organization. The template agent needs a real
+# Azure DevOps organization, so it is off here; the scaler just reports that it cannot reach the pool.
+azp:
+  url: https://dev.azure.com/think-cube-ci
+  pool: ci
+  token: ci-placeholder-token
+templateAgent:
+  enabled: false

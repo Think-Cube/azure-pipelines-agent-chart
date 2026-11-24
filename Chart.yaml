@@ -1,0 +1,28 @@
+apiVersion: v2
+name: azure-pipelines-agent
+description: Self-hosted Azure Pipelines agents on Kubernetes that KEDA starts one per queued job
+type: application
+version: 1.0.0
+appVersion: "5.282.0"
+kubeVersion: ">=1.28.0-0"
+home: https://github.com/Think-Cube/azure-pipelines-agent-chart
+icon: https://avatars.githubusercontent.com/u/56288371?s=200&v=4
+sources:
+  - https://github.com/Think-Cube/azure-pipelines-agent-chart
+  - https://github.com/Think-Cube/docker-azure-pipelines-agent
+keywords:
+  - azure-devops
+  - azure-pipelines
+  - agent
+  - keda
+  - autoscaling
+  - ci-cd
+maintainers:
+  - name: Think-Cube
+    email: contact@thinkcube.dev
+    url: https://github.com/Think-Cube
+annotations:
+  artifacthub.io/license: MIT
+  artifacthub.io/images: |
+    - name: azure-pipelines-agent
+      image: ghcr.io/think-cube/azure-pipelines-agent:1.0.0

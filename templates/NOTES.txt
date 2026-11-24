@@ -1,0 +1,15 @@
+Azure Pipelines agents for pool "{{ .Values.azp.pool }}" in {{ .Values.azp.url }} are set up as release {{ .Release.Name }} in namespace {{ .Release.Namespace }}.
+
+KEDA checks the pool every {{ .Values.scaling.pollingInterval }} seconds and starts one agent Job per queued job, up to {{ .Values.scaling.maxReplicaCount }} at a time. Each agent runs a single job and unregisters.
+{{- if .Values.templateAgent.enabled }}
+
+The offline template agent "{{ include "agent.templateName" . }}" keeps the pool non-empty, so jobs queue even when no agent is running. It shows as offline in Azure DevOps; that is expected.
+{{- else }}
+
+The template agent is disabled. Unless the pool already has another agent, Azure DevOps will not queue jobs while no agent is running.
+{{- end }}
+
+Watch the agents:
+
+  kubectl --namespace {{ .Release.Namespace }} get scaledjob {{ include "agent.fullname" . }}
+  kubectl --namespace {{ .Release.Namespace }} get jobs,pods -l app.kubernetes.io/instance={{ .Release.Name }}

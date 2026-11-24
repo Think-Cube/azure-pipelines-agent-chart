@@ -1,0 +1,116 @@
+# -- Override the chart name used in resource names
+nameOverride: ""
+# -- Override the full resource name prefix
+fullnameOverride: ""
+
+image:
+  # -- Agent image
+  repository: ghcr.io/think-cube/azure-pipelines-agent
+  # -- Image tag
+  tag: "1.0.0"
+  # -- Image digest, for example `sha256:...`. When set, it is used instead of the tag.
+  digest: ""
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+
+# -- Secrets for pulling images from private registries
+imagePullSecrets: []
+
+azp:
+  # -- Organization URL, for example `https://dev.azure.com/contoso` (required)
+  url: ""
+  # -- Agent pool the agents register in (required)
+  pool: ""
+  # -- Existing Secret with the key `AZP_TOKEN`. When empty, the chart creates one from `token`.
+  existingSecret: ""
+  # -- Personal access token with the Agent Pools (read, manage) scope. Required when no existing Secret is set.
+  token: ""
+
+scaling:
+  # -- Numeric ID of the agent pool. When empty, KEDA looks the pool up by `azp.pool`.
+  poolID: ""
+  # -- Agents kept ready even with an empty queue
+  minReplicaCount: 0
+  # -- Most agents running at the same time
+  maxReplicaCount: 10
+  # -- Seconds between queue checks
+  pollingInterval: 30
+  # -- KEDA scaling strategy: `default`, `accurate` or `eager`
+  strategy: default
+  # -- Comma-separated demands the agents meet, so KEDA only starts them for matching jobs
+  demands: ""
+  # -- Finished Jobs kept for inspection
+  successfulJobsHistoryLimit: 3
+  # -- Failed Jobs kept for inspection
+  failedJobsHistoryLimit: 5
+
+job:
+  # -- Longest a single pipeline job may run, in seconds. 0 means no limit.
+  activeDeadlineSeconds: 0
+  # -- Seconds a finished Job and its pod are kept before Kubernetes deletes them
+  ttlSecondsAfterFinished: 600
+  # -- Seconds the agent gets to finish and unregister when its pod is stopped
+  terminationGracePeriodSeconds: 120
+
+templateAgent:
+  # -- Register an offline template agent after install and upgrade. Azure DevOps only queues jobs for a pool that has an agent, so this lets the pool scale from zero.
+  enabled: true
+  # -- Name of the template agent. Defaults to `<release fullname>-template`.
+  name: ""
+  # -- Let KEDA match jobs against the template's capabilities (the `parent` trigger setting)
+  useAsParent: true
+
+workVolume:
+  # -- Size limit of the per-job work directory, an emptyDir. Empty means no limit.
+  sizeLimit: ""
+
+# -- Extra environment variables for the agent, also reported to Azure DevOps as capabilities
+extraEnv: []
+# -- Extra volumes for the agent pod
+extraVolumes: []
+# -- Extra volume mounts for the agent container
+extraVolumeMounts: []
+
+# -- Resources of the agent container
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    memory: 4Gi
+
+serviceAccount:
+  # -- Create a ServiceAccount
+  create: true
+  # -- Name of the ServiceAccount. Generated from the release name when empty.
+  name: ""
+  # -- Annotations of the ServiceAccount, for example for workload identity
+  annotations: {}
+
+# -- Annotations added to the agent pods
+podAnnotations: {}
+# -- Labels added to the agent pods
+podLabels: {}
+
+# -- Pod security context. The image runs the agent as UID and GID 10001.
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  seccompProfile:
+    type: RuntimeDefault
+
+# -- Container security context
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+
+# -- Node selector for the agent pods
+nodeSelector: {}
+# -- Tolerations for the agent pods
+tolerations: []
+# -- Affinity for the agent pods
+affinity: {}
