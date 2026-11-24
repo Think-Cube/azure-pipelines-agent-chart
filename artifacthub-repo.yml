@@ -1,0 +1,6 @@
+# Artifact Hub metadata for the OCI repository ghcr.io/think-cube/charts/azure-pipelines-agent.
+# https://artifacthub.io/docs/topics/repositories/helm-charts/
+repositoryID: 924164eb-768c-46b6-970d-c78fc281c664
+owners:
+  - name: think-cube
+    email: contact@thinkcube.dev

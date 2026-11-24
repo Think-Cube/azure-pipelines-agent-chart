@@ -1,0 +1,11 @@
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: {{ include "agent.fullname" . }}
+  labels:
+    {{- include "agent.labels" . | nindent 4 }}
+spec:
+  secretTargetRef:
+    - parameter: personalAccessToken
+      name: {{ include "agent.secretName" . }}
+      key: AZP_TOKEN

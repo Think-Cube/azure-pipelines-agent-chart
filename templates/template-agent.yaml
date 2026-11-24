@@ -1,0 +1,44 @@
+{{- if .Values.templateAgent.enabled }}
+# Registers an agent that stays offline. Azure DevOps only queues jobs for a pool that has
+# at least one agent, so this lets the pool scale from zero. KEDA can also match demands
+# against its capabilities.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ printf "%s-register" (include "agent.templateName" . | trunc 54 | trimSuffix "-") }}
+  labels:
+    {{- include "agent.labels" . | nindent 4 }}
+    app.kubernetes.io/component: template-agent
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        {{- include "agent.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: template-agent
+    spec:
+      {{- include "agent.podSpec" . | nindent 6 }}
+      restartPolicy: Never
+      containers:
+        - name: register
+          image: {{ include "agent.image" . | quote }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            {{- include "agent.env" . | nindent 12 }}
+            - name: AZP_AGENT_NAME
+              value: {{ include "agent.templateName" . | quote }}
+            - name: AZP_REGISTER_ONLY
+              value: "true"
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 512Mi
+{{- end }}

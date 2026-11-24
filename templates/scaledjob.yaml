@@ -1,0 +1,86 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledJob
+metadata:
+  name: {{ include "agent.fullname" . }}
+  labels:
+    {{- include "agent.labels" . | nindent 4 }}
+spec:
+  pollingInterval: {{ .Values.scaling.pollingInterval }}
+  minReplicaCount: {{ .Values.scaling.minReplicaCount }}
+  maxReplicaCount: {{ .Values.scaling.maxReplicaCount }}
+  successfulJobsHistoryLimit: {{ .Values.scaling.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.scaling.failedJobsHistoryLimit }}
+  scalingStrategy:
+    strategy: {{ .Values.scaling.strategy }}
+  jobTargetRef:
+    parallelism: 1
+    completions: 1
+    # A failed pipeline job is reported in Azure DevOps; retrying the pod would only register another agent.
+    backoffLimit: 0
+    {{- with .Values.job.activeDeadlineSeconds }}
+    activeDeadlineSeconds: {{ . }}
+    {{- end }}
+    ttlSecondsAfterFinished: {{ .Values.job.ttlSecondsAfterFinished }}
+    template:
+      metadata:
+        labels:
+          {{- include "agent.selectorLabels" . | nindent 10 }}
+          app.kubernetes.io/component: agent
+          {{- with .Values.podLabels }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+        {{- with .Values.podAnnotations }}
+        annotations:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+      spec:
+        {{- include "agent.podSpec" . | nindent 8 }}
+        restartPolicy: Never
+        terminationGracePeriodSeconds: {{ .Values.job.terminationGracePeriodSeconds }}
+        containers:
+          - name: agent
+            image: {{ include "agent.image" . | quote }}
+            imagePullPolicy: {{ .Values.image.pullPolicy }}
+            # One job per pod: the agent takes a job, runs it and unregisters.
+            args:
+              - --once
+            env:
+              {{- include "agent.env" . | nindent 14 }}
+            securityContext:
+              {{- toYaml .Values.securityContext | nindent 14 }}
+            resources:
+              {{- toYaml .Values.resources | nindent 14 }}
+            volumeMounts:
+              - name: work
+                mountPath: /azp/_work
+              {{- with .Values.extraVolumeMounts }}
+              {{- toYaml . | nindent 14 }}
+              {{- end }}
+        volumes:
+          - name: work
+            {{- if .Values.workVolume.sizeLimit }}
+            emptyDir:
+              sizeLimit: {{ .Values.workVolume.sizeLimit | quote }}
+            {{- else }}
+            emptyDir: {}
+            {{- end }}
+          {{- with .Values.extraVolumes }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+  triggers:
+    - type: azure-pipelines
+      metadata:
+        organizationURL: {{ .Values.azp.url | quote }}
+        {{- if .Values.scaling.poolID }}
+        poolID: {{ .Values.scaling.poolID | quote }}
+        {{- else }}
+        poolName: {{ .Values.azp.pool | quote }}
+        {{- end }}
+        {{- if and .Values.templateAgent.enabled .Values.templateAgent.useAsParent }}
+        parent: {{ include "agent.templateName" . | quote }}
+        {{- end }}
+        {{- with .Values.scaling.demands }}
+        demands: {{ . | quote }}
+        {{- end }}
+      authenticationRef:
+        name: {{ include "agent.fullname" . }}

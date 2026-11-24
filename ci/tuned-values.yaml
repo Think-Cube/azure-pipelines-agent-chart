@@ -1,0 +1,28 @@
+# A tuned setup: pool ID, demands, accurate scaling, limits, extra env and volumes, and a pinned image digest.
+image:
+  digest: sha256:803d3b79dec94b33cba712412de92b92cdb01139f1d5d509c54b1a8728277c3c
+azp:
+  url: https://dev.azure.com/think-cube-ci
+  pool: ci
+  token: ci-placeholder-token
+scaling:
+  poolID: "12"
+  minReplicaCount: 0
+  maxReplicaCount: 3
+  strategy: accurate
+  demands: Agent.OS -equals Linux,java
+job:
+  activeDeadlineSeconds: 3600
+workVolume:
+  sizeLimit: 10Gi
+templateAgent:
+  enabled: false
+extraEnv:
+  - name: java
+    value: "21"
+extraVolumes:
+  - name: cache
+    emptyDir: {}
+extraVolumeMounts:
+  - name: cache
+    mountPath: /home/agent/.cache

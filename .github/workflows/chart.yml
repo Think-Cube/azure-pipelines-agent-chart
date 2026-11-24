@@ -1,0 +1,22 @@
+name: Chart
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*.*.*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  chart:
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    uses: Think-Cube/workflows/.github/workflows/helm-chart.yml@v1.2.0
+    with:
+      # The ScaledJob only becomes ready with a real Azure DevOps organization.
+      wait: legacy
