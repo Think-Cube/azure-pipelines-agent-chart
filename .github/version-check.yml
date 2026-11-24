@@ -1,0 +1,8 @@
+# Versions Dependabot does not track; checked weekly by .github/workflows/version-check.yml.
+checks:
+  - name: azure-pipelines-agent image
+    file: values.yaml
+    path: .image.tag
+    source: github-release
+    repository: Think-Cube/docker-azure-pipelines-agent
+    note: Also update appVersion to the image's agent version, the artifacthub.io/images annotation in Chart.yaml and the digest in ci/tuned-values.yaml, and bump the chart version.
